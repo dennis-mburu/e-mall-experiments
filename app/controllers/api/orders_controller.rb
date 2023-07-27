@@ -1,43 +1,46 @@
 class Api::OrdersController < ApplicationController
-    before_action :authorize
-    rescue_from ActiveRecord::RecordInvalid, with: :render_unproccessable_entity
-    rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_response
+  before_action :authorize
+  rescue_from ActiveRecord::RecordInvalid, with: :render_unproccessable_entity
+  rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_response
 
-    
-    def index
-        # render json: Order.all
-        orders = Order.where(customer_id: @customer.id)
-        render json: orders
+  def index
+    # render json: Order.all
+    orders = Order.where(customer_id: @customer.id)
+    # binding.pry
+    render json: orders
+  end
+
+  def create
+    # binding.pry
+    order = Order.create!(product_id: params[:product_id], customer_id: @customer.id)
+  end
+
+  def destroy
+    order = Order.find(params[:id])
+    if order.customer_id != @customer.id
+      render json: { error: "You can only delete orders that belong to you" }
+    else
+      order.destroy
+      render json: order
     end
+  end
 
-    def create
-        # binding.pry
-        order = Order.create!(product_id: params[:product_id], customer_id: @customer.id)
-    end
+  private
 
-    def destroy
-        order = Order.find(params[:id])
-        order.destroy
-        render json: order
-    end
+  def authorize
+    @customer = Customer.find_by(id: session[:customer_id])
+    render json: { errors: ["Please Log in or Create a customer account to manage your cart"] }, status: 401 unless @customer
+  end
 
-    private
+  def order_param
+    params.permit(:product_id)
+  end
 
-    def authorize
-        @customer = Customer.find_by(id: session[:customer_id])
-        render json: {errors: ["Please Log in or Create a customer account to manage your cart"]}, status: 401 unless @customer  
-    end
+  def render_unproccessable_entity(invalid)
+    render json: { errors: invalid.record.errors.full_messages }, status: 422
+  end
 
-    def order_param
-        params.permit(:product_id)
-    end
-
-    def render_unproccessable_entity(invalid)
-        render  json: {errors: invalid.record.errors.full_messages}, status: 422
-     end
-
-     def render_not_found_response
-        render json: {errors: "Record Not Found"}
-     end
-
+  def render_not_found_response
+    render json: { errors: "Record Not Found" }
+  end
 end

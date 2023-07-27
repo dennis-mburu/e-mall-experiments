@@ -15,6 +15,7 @@ class Api::CustomerSessionsController < ApplicationController
     def destroy
         if session[:customer_id]
             session.delete :customer_id
+            # binding.pry
             head 204
         else
             render json: {errors: ["Not Authorized"]}, status: 401

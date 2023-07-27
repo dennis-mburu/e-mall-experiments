@@ -30,6 +30,7 @@ group :development, :test do
   #my additional dev gems
   gem 'awesome_print', '~> 1.9', '>= 1.9.2'
   gem 'pry', '~> 0.14.1'
+  gem 'byebug', '~> 11.1', '>= 11.1.3'
 
 
   # Use sqlite3 as the database for Active Record
